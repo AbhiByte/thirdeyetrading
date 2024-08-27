@@ -1,0 +1,46 @@
+import requests
+from datetime import datetime, timedelta
+import csv
+from io import StringIO
+
+def fetch_gcp_data():
+    end_time = datetime.now()
+    start_time = end_time - timedelta(seconds=1)
+
+    url = f"http://www.global-mind.org/cgi-bin/eggdatareq.pl?z=1&year={start_time.year}&month={start_time.month}&day={start_time.day}&stime={start_time.hour}:{start_time.minute}:{start_time.second}&etime={end_time.hour}:{end_time.minute}:{end_time.second}&gzip=no"
+
+    response = requests.get(url)
+    
+    if response.status_code != 200:
+        raise Exception(f"API request failed with status code {response.status_code}")
+
+    data = {}
+    csv_reader = csv.reader(StringIO(response.text))
+    
+    for row in csv_reader:
+        if not row:
+            continue
+        
+        row_type = row[0]
+        
+        if row_type == '10':
+            # Metadata
+            data.setdefault('metadata', {})[row[2]] = row[3]
+        elif row_type == '11':
+            # Time range info
+            data.setdefault('time_range', {})[row[3]] = row[2]
+        elif row_type == '12':
+            # Column names
+            data['column_names'] = row[3:]
+        elif row_type == '13':
+            # Actual data
+            data.setdefault('measurements', []).append({
+                'timestamp': row[1],
+                'values': [float(x) for x in row[3:]]
+            })
+
+    return data
+
+if __name__ == "__main__":
+    gcp_data = fetch_gcp_data()
+    print(gcp_data)
