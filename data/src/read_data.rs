@@ -2,6 +2,8 @@ use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
 
+
+/// Reads file contents
 pub fn read_sample_data(filename: &str) -> io::Result<Vec<String>> {
     let path = Path::new("samples").join(filename);
     let file = File::open(&path)?;
