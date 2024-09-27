@@ -2,8 +2,9 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use statrs::statistics::Statistics;
 use statrs::distribution::Normal;
+use std::error::Error;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+pub fn analyze_egg_data() -> Result<(), Box<dyn Error>> {
     let file = File::open("data/samples/one_day_sample.txt")?;
     let reader = BufReader::new(file);
 
